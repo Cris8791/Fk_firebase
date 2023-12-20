@@ -1,18 +1,30 @@
-import {
-  getFirestore,
-  doc,
-  setDoc,
-  getDoc,
-} from '../../node_modules/firebase/firestore';
+//firebase configuration
+// import { initializeApp } from 'firebase/app';
+
+// const firebaseConfig = {
+//   apiKey: 'AIzaSyAKYrF2YoqGKSaSU407C9X91DqaZMAg4q4',
+//   authDomain: 'filmoteka-urraccon.firebaseapp.com',
+//   projectId: 'filmoteka-urraccon',
+//   storageBucket: 'filmoteka-urraccon.appspot.com',
+//   messagingSenderId: '712511464775',
+//   appId: '1:712511464775:web:f28be5eb7fc38469c69862',
+// };
+
+// const app = initializeApp(firebaseConfig);
+//--------------------------------------------------------------
+
+import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 import { app } from './firebase_config.js';
 // import { watchedMocieList, queuedMovieList } from '';
-// import { DeviceUUID } from 'device-uuid/lib/device-uuid.js';
+import { DeviceUUID } from 'device-uuid';
 // import { v4 as uuid } from 'uuid';
 // import { biri } from 'biri';
 
 const db = getFirestore(app);
+// console.log(app);
+// console.log(db);
 // const biri = require('biri');
-const deviceID = 'your-device-ID';
+const deviceID = new DeviceUUID().get();
 // const x = async function y() {
 //   new Promise((resolve) => {
 //     setTimeout(resolve(z),1000);
@@ -24,7 +36,22 @@ const deviceID = 'your-device-ID';
 // }
 
 const itemPath = doc(db, 'watched_and_queued_movie_list', `${deviceID}`);
+// // test
+// async function getData() {
+//   const docSnap = await getDoc(itemPath);
+//   if (docSnap.exists()) {
+//     console.log('Document data:', docSnap.data());
+//   } else {
+//     // docSnap.data() will be undefined in this case
+//     console.log('No such document!');
+//   }
+// }
+// getData();
+//
+
+//the rest of the code
 // let savedMovies = '[]';
+let itemAccess = '';
 let watchedQueuedMovies = {
   watchedMovies: [],
   queuedMovies: [],
@@ -38,12 +65,21 @@ console.log(deviceID);
 const downloadWatchedQueuedMoviesFromDB = async function getItem() {
   try {
     itemAccess = await getDoc(itemPath);
-    savedMovies = itemAccess.data();
+    const savedMovies = itemAccess.data();
     console.log(savedMovies);
-    // savedMoviesLength = Object.keys(savedMovies).length;
-    // console.log(savedMoviesLength);
+    if (savedMovies === undefined) {
+      await setDoc(itemPath, watchedQueuedMovies);
+      return;
+    }
+    const savedMoviesLength = Object.keys(savedMovies).length;
+    console.log(savedMoviesLength);
+    // if (savedMoviesLength === 0) {
+    //   savedMovies.watchedMovies = [];
+    //   savedMovies.queuedMovies = [];
+    // } else {
     watchedQueuedMovies.watchedMovies = savedMovies.watchedMovies;
     watchedQueuedMovies.queuedMovies = savedMovies.queuedMovies;
+    // }
     console.log(
       'The movies added to watched are: ',
       savedMovies.watchedMovies,
@@ -72,51 +108,55 @@ const uploadWatchedQueuedMoviesToDB = async function setItem(
   listType,
   addMovies
 ) {
-  // debugger;
-  downloadWatchedQueuedMoviesFromDB();
-  console.log(listType, addMovies);
-  // let addMovies = [];
-  // debugger;
-  // if (addWatchedMovies === null) {
-  //   if ((addQueuedMovies = null)) {
-  //   }
-  // }
-  // const addWatchedMoviesLength = addWatchedMovies.length;
-  // const addQueuedMoviesLength = addQueuedMovies.length;
-  // console.log(addWatchedMoviesLength);
-  // if (addWatchedMoviesLength !== 0) {
-  //   if (addQueuedMoviesLength !== 0) {
-  //     addWatchedMovies.forEach(watchedMovie => {
-  //       addQueuedMovies.forEach(queuedMovie => {
-  //         if (watchedMovie.id === queuedMovie.id) {
-  //           let moviePlaced = addWatchedMovies.findIndex(
-  //             movie => movie.id === watchedMovie.is
-  //           );
-  //           addWatchedMovies.splice(moviePlaced, 1);
-  //         }
-  //       });
-  //     });
-  //   }
-  // }
-  // const addMovies = addWatchedMovies.concat(addQueuedMovies);
-  const addMoviesTextified = JSON.stringify(addMovies);
-  console.log(addMoviesTextified);
-  // if (addMovieTextified === '[]') {
-  //   return;
-  // }
-  // watchedQueuedMovies.movies = addMoviesTextified;
-  if (listType === 'watched') {
-    watchedQueuedMovies.watchedMovies = [];
-    watchedQueuedMovies.watchedMovies.push(addMoviesTextified);
-  } else {
-    watchedQueuedMovies.queuedMovies = [];
-    watchedQueuedMovies.queuedMovies.push(addMoviesTextified);
-  }
-
   try {
     // debugger;
+    downloadWatchedQueuedMoviesFromDB();
+    console.log(listType, addMovies);
+    // let addMovies = [];
+    // debugger;
+    // if (addWatchedMovies === null) {
+    //   if ((addQueuedMovies = null)) {
+    //   }
+    // }
+    // const addWatchedMoviesLength = addWatchedMovies.length;
+    // const addQueuedMoviesLength = addQueuedMovies.length;
+    // console.log(addWatchedMoviesLength);
+    // if (addWatchedMoviesLength !== 0) {
+    //   if (addQueuedMoviesLength !== 0) {
+    //     addWatchedMovies.forEach(watchedMovie => {
+    //       addQueuedMovies.forEach(queuedMovie => {
+    //         if (watchedMovie.id === queuedMovie.id) {
+    //           let moviePlaced = addWatchedMovies.findIndex(
+    //             movie => movie.id === watchedMovie.is
+    //           );
+    //           addWatchedMovies.splice(moviePlaced, 1);
+    //         }
+    //       });
+    //     });
+    //   }
+    // }
+    // const addMovies = addWatchedMovies.concat(addQueuedMovies);
+    const addMoviesTextified = JSON.stringify(addMovies);
+    console.log(addMoviesTextified);
+    // if (addMovieTextified === '[]') {
+    //   return;
+    // }
+    // watchedQueuedMovies.movies = addMoviesTextified;
+    if (listType === 'watched') {
+      watchedQueuedMovies.watchedMovies = [];
+      watchedQueuedMovies.watchedMovies.push(addMoviesTextified);
+    } else {
+      watchedQueuedMovies.queuedMovies = [];
+      watchedQueuedMovies.queuedMovies.push(addMoviesTextified);
+    }
+    // debugger;
     await setDoc(itemPath, watchedQueuedMovies);
-    console.log('The list of movies has been successfully added');
+    console.log(
+      'The list of added watched movies is: ',
+      watchedQueuedMovies.watchedMovies,
+      ' and queued is: ',
+      watchedQueuedMovies.queuedMovies
+    );
   } catch (error) {
     console.log(`I couldn't save the list of movies, because: `, error);
   }
@@ -211,3 +251,4 @@ export {
 //   uploadWatchedQueuedMoviesToDB,
 //   downloadWatchedQueuedMoviesFromDB,
 // } from './js/db.js';
+//-----------------------------------------------------------------------
